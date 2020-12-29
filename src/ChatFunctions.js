@@ -6,7 +6,8 @@ module.exports = {
 
     getNickname(msg) {
         if (msg.member === 'undefined' || msg.member === null) {
-            return msg.author.username;
+            return msg.author.displayName;
+            //return msg.author.username;
         }
 
         return msg.member.displayName;

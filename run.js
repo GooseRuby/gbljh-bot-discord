@@ -50,47 +50,71 @@ DiscordClient.on('message', msg => {
     return;
   }
 
-    if (msg.content.match(/^!ктопидор/)) {
-        game.CanStartGame(msg.guild.id).then(() => {
-            game.Run(msg.guild.id).then(async winMsg => {
-                await game.Tease(msg.channel).then();
-                msg.channel.send(winMsg);
-            }, reject => {
-                msg.channel.send(reject);
-                //ChatFunctions.temporaryMessage(msg.channel, reject, 8000);
+  if (msg.content.match(/^!добавить/)) {
+    let chunks = msg.content.slice(prefix.length).trim().split(/ +/g);
+    if(msg.member.hasPermission("ADMINISTRATOR")){
+      if(chunks[1] != undefined) {
+        participantsRepository
+          .IsParticipantExists(msg.mentions.members.first().id, msg.guild.id)
+            .then(isExists => {
+              if (isExists) {
+                const response = msg.channel.send("Ты уже участвуешь в этой игре, чел");
+                //ChatFunctions.temporaryMessage(msg.channel, "You're already participating in this game, silly", 7000);
+              } else {
+                participantsRepository.AddParticipant(msg.mentions.members.first().id, msg.guild.id, msg.mentions.members.first().user.displayName);
+                const response = msg.channel.send("Окей, ты в игре, " + msg.mentions.members.first().displayName);
+                //ChatFunctions.temporaryMessage(msg.channel, "Alright, you're in, " + ChatFunctions.getNickname(msg), 5000)
+              }
             });
-        }, reject => {
-            msg.channel.send("А пидор сегодня - " + reject);
-        });
-
-        ChatFunctions.deleteMessage(msg, 1000);
-    }
-
-    if (msg.content.match(/^!топпидоров/) || msg.content.match(/^!топ/)) {
-        game.GetStats(msg.guild.id).then(message => {
-            msg.channel.send(message);
-            //ChatFunctions.temporaryMessage(msg.channel, message, 15000);
-        });
-        ChatFunctions.deleteMessage(msg, 1000);
+        ChatFunctions.deleteMessage(msg, 2000);
         return;
+      }
+    } else {
+      msg.channel.send("У вас нет прав");
+      return;
+    }
+  }
+
+  if (msg.content.match(/^!ктопидор/)) {
+    game.CanStartGame(msg.guild.id).then(() => {
+      game.Run(msg.guild.id).then(async winMsg => {
+        await game.Tease(msg.channel).then();
+        msg.channel.send(winMsg);
+      }, reject => {
+        msg.channel.send(reject);
+        //ChatFunctions.temporaryMessage(msg.channel, reject, 8000);
+      });
+    }, reject => {
+      msg.channel.send("А пидор сегодня - " + reject);
+    });
+
+    ChatFunctions.deleteMessage(msg, 1000);
+  }
+
+  if (msg.content.match(/^!топпидоров/) || msg.content.match(/^!топ/)) {
+    game.GetStats(msg.guild.id).then(message => {
+      msg.channel.send(message);
+      //ChatFunctions.temporaryMessage(msg.channel, message, 15000);
+    });
+    ChatFunctions.deleteMessage(msg, 1000);
+    return;
+  }
+
+  if (msg.content.match(/^!исключить/)) {
+    let chunks = msg.content.slice(prefix.length).trim().split(/ +/g);
+    if(chunks[1] == undefined) {
+      var discordId = msg.author.id;
+    } else if(msg.member.hasPermission("ADMINISTRATOR")){
+      var discordId = msg.mentions.members.first().id;
+    } else {
+      msg.channel.send("У вас нет прав");
+      return;
     }
 
-    if (msg.content.match(/^!исключить/)) {
-        /*let chunks = msg.content.slice(prefix.length).trim().split(/ +/g);
-        if(chunks[1] != undefined) {
-
-        }*/
-        let discordId = msg.mentions.members.first().id;
-        //let chunks = msg.content.slice(prefix.length).trim().split(/ +/g);
-        //let chunks = msg.message.split(' ');
-        //chunks.splice(0, 1);
-        //let discordId = chunks[0];
-
-        msg.channel.send("Ок");
-
-        participantsRepository.RemoveParticipant(discordId, msg.guild.id);
-        return;
-    }
+    participantsRepository.RemoveParticipant(discordId, msg.guild.id);
+    msg.channel.send("Пользователь <@" + discordId + "> удалён из игры.");
+    return;
+  }
 });
 
 //DiscordClient.login(process.env.BOT_TOKEN).then(r => console.log('The bot has started!'));
