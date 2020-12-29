@@ -54,8 +54,7 @@ class Game {
                 .then(game => {
                     if (game === undefined) {
                         resolve(true);
-                    }
-
+                    } else
                     if (game.datetime > Math.floor(Date.now() / 1000) - 86400) {
                         reject(game.discord_user_name);
                         return;
@@ -86,7 +85,7 @@ class Game {
 
                 this.gamesRepository.SaveGameInformation(guild_id, participant.id);
                 this.participantRepository.ScoreParticipant(participant.id);
-                resolve(Misc.GetRandomElement(resultPhrases) + "<@" + participant.discord_user_id+">");
+                resolve(Misc.GetRandomElement(resultPhrases) + "<@" + participant.discord_user_id + ">");
             });
         });
     }
