@@ -1,7 +1,7 @@
 {
   "name": "pidor-bot",
-  "version": "1.0.0",
-  "description": "A bot for pidor-of-the-day game",
+  "version": "1.0.1",
+  "description": "A bot for gay-of-the-day game",
   "main": "run.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"

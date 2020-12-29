@@ -61,7 +61,7 @@ DiscordClient.on('message', msg => {
                 const response = msg.channel.send("Ты уже участвуешь в этой игре, чел");
                 //ChatFunctions.temporaryMessage(msg.channel, "You're already participating in this game, silly", 7000);
               } else {
-                participantsRepository.AddParticipant(msg.mentions.members.first().id, msg.guild.id, msg.mentions.members.first().user.displayName);
+                participantsRepository.AddParticipant(msg.mentions.members.first().id, msg.guild.id, msg.mentions.members.first().displayName);
                 const response = msg.channel.send("Окей, ты в игре, " + msg.mentions.members.first().displayName);
                 //ChatFunctions.temporaryMessage(msg.channel, "Alright, you're in, " + ChatFunctions.getNickname(msg), 5000)
               }
