@@ -1,4 +1,3 @@
 node_modules/
 database.db3
-bot.log
-.env
+botconfig.json
