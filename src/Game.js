@@ -48,6 +48,8 @@ class Game {
     }
 
     async CanStartGame(guild_id) {
+      //var inputDate = game.datetime;
+      //var todaysDate = new Date();
         return new Promise((resolve, reject) => {
             this.gamesRepository
                 .GetLastGame(guild_id)
@@ -55,7 +57,11 @@ class Game {
                     if (game === undefined) {
                         resolve(true);
                     } else
-                    if (game.datetime > Math.floor(Date.now() / 1000) - 86400) {
+                    /*if (game.datetime > Math.floor(Date.now() / 1000) - 86400) {
+                        reject(game.discord_user_name);
+                        return;
+                    }*/
+                    if (game.datetime == new Date().setHours(0,0,0,0)) {
                         reject(game.discord_user_name);
                         return;
                     }
