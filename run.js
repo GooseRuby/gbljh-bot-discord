@@ -11,22 +11,61 @@ const DiscordClient = new DiscordJS.Client();
 const ChatFunctions = require("./src/ChatFunctions");
 const GamesRepository = require("./src/Repositories/GamesRepository");
 const ParticipantRepository = require("./src/Repositories/ParticipantRepository");
+const SettingsRepository = require("./src/Repositories/SettingsRepository");
 const Game = require("./src/Game");
+const Settings = require("./src/Settings");
 const DbAdapter = require("./src/DbAdapter");
 
 const db = new sqlite3.Database('database.db3');
+const dbs = new sqlite3.Database('settings_database.db3');
 const dbAdapter = new DbAdapter(db);
+const dbsAdapter = new DbAdapter(dbs);
 const gamesRepository = new GamesRepository(dbAdapter);
 const participantsRepository = new ParticipantRepository(dbAdapter);
+const settingsRepository = new SettingsRepository(dbsAdapter);
 const game = new Game(dbAdapter, participantsRepository, gamesRepository);
+const settings = new Settings(dbsAdapter, settingsRepository);
 
-Cron.schedule('* * * * *', () => {
-  DiscordClient.channels.get('793373852792258572').send('Сообщение которое выводится 1 раз в минуту')
-  console.log('running a task every minute');
-});
 
 DiscordClient.on('ready', client => {
   console.log(`готов вкалывать`);
+})
+
+Cron.schedule('*/10 * * * * *', () => {
+  settings.IsGuildSub('793373851991539743')
+    .then(isSub => {
+      if (isSub) {
+        DiscordClient.channels.get('793373852792258572').send('Сообщение которое выводится раз в 10 сек');
+        console.log('running a task every 10 sec');
+      }else{
+        //
+      }
+  });
+})
+
+
+DiscordClient.on('guildCreate', guild => {
+  let defaultChannel = "";
+  guild.channels.forEach((channel) => {
+    if(channel.type == "text" && defaultChannel == "") {
+      if(channel.permissionsFor(guild.me).has("SEND_MESSAGES")) {
+        defaultChannel = channel;
+      }
+    }
+  })
+  //defaultChannel will be the channel object that the bot first finds permissions for
+  defaultChannel.send('Hello, Im a Bot!');
+
+  let guild_id = guild.id;
+  settingsRepository
+    .IsGuildExists(guild_id).then(isExists => {
+      if (isExists) {
+        console.log(`Сервер ` + guild_id + ` уже существует, настройки восстановлены.`);
+      } else {
+        settingsRepository.CreateNewSettings(guild_id);
+        console.log(`Сервер ` + guild_id + ` успешно инициализирован.`);
+      }
+    });
 })
 
 DiscordClient.on('message', msg => {
