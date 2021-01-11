@@ -31,15 +31,25 @@ DiscordClient.on('ready', client => {
   console.log(`готов вкалывать`);
 })
 
-Cron.schedule('*/10 * * * * *', () => {
-  settings.IsGuildSub('793373851991539743')
-    .then(isSub => {
-      if (isSub) {
-        DiscordClient.channels.get('793373852792258572').send('Сообщение которое выводится раз в 10 сек');
-        console.log('running a task every 10 sec');
-      }else{
-        //
-      }
+Cron.schedule('0 * * *', () => { //АВТОПИДОР
+  settings.GetSubGuilds().then(array => {
+    console.log(`Список серверов с подпиской:`);
+    console.log(array);
+    array.forEach((item, i) => {
+      DiscordClient.channels.get(item.defch).send('Сообщение которое выводится конкретно для этого сервера');
+      console.log(`Запушено автосообщение на сервере \'` + item.id + `\', на канале \'` + item.defch + `\'.`);
+
+      game.CanStartGame(item.id).then(() => { //функция пидора (неожиданно да)
+        game.Run(item.id).then(async winMsg => {
+          await game.Tease(msg.channel).then();
+          DiscordClient.channels.get(item.defch).send(winMsg);
+        }, reject => {
+          DiscordClient.channels.get(item.defch).send(reject);
+        });
+      }, reject => {
+        DiscordClient.channels.get(item.defch).send("А пидор сегодня - " + reject);
+      });
+    });
   });
 })
 
@@ -54,15 +64,16 @@ DiscordClient.on('guildCreate', guild => {
     }
   })
   //defaultChannel will be the channel object that the bot first finds permissions for
-  defaultChannel.send('Hello, Im a Bot!');
+  defaultChannel.send('Приветственное сообщение я ещё не написал круто да!');
 
   let guild_id = guild.id;
+  let def_ch = defaultChannel.id;
   settingsRepository
     .IsGuildExists(guild_id).then(isExists => {
       if (isExists) {
         console.log(`Сервер ` + guild_id + ` уже существует, настройки восстановлены.`);
       } else {
-        settingsRepository.CreateNewSettings(guild_id);
+        settingsRepository.CreateNewSettings(guild_id, def_ch);
         console.log(`Сервер ` + guild_id + ` успешно инициализирован.`);
       }
     });

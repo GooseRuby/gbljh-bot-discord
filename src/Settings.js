@@ -5,7 +5,7 @@ class Settings {
         this.settingsRepository = settingsRepository;
     }
 
-    async IsGuildSub(guild_id) {
+    async IsGuildSub(guild_id) { //по сути не нужен, так как есть другой вариант - GetSubGuilds, который просто выбирает всех подписчиков
         return new Promise((resolve, reject) => {
             this.settingsRepository
                 .GetSub(guild_id)
@@ -21,17 +21,24 @@ class Settings {
         });
     }
 
-    async Sub(guild_id) {
-        return new Promise((resolve, reject) => {
-            this.settingsRepository.IsGuildSub(guild_id).then(isSub => {
-                if (isSub === null) {
-                    reject("ошибочка");
-                    return;
-                }
+    GetSubGuilds() {
+        return new Promise(resolve => {
+            this.dbsAdapter
+                .all(
+                    "SELECT discord_guild_id, default_channel FROM setlist WHERE is_sub = 1",
+                    {
+                    })
+                .then(subguilds => {
+                    let subguildsarr = [];
+                    subguilds.forEach((item) => {
+                      subguildsarr.push({
+                        id: item.discord_guild_id,
+                        defch: item.default_channel
+                      });
+                    });
 
-
-                resolve(isSub.is_sub);
-            });
+                    resolve(subguildsarr);
+                });
         });
     }
 
