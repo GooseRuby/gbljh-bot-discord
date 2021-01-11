@@ -55,7 +55,7 @@ class ParticipantsRepository {
 
     ScoreParticipant(participant_id) {
         this.dbAdapter.run("UPDATE participants SET score = score + 1 WHERE id = ?1", {
-            1: participant_id,
+            1: participant_id
         });
     }
 }

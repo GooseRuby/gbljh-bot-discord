@@ -6,21 +6,77 @@ let prefix = config.prefix;
 
 const DiscordJS = require("discord.js");
 const sqlite3 = require("sqlite3");
+const Cron = require('node-cron'); //штука для запуска в определённое время
 const DiscordClient = new DiscordJS.Client();
 const ChatFunctions = require("./src/ChatFunctions");
 const GamesRepository = require("./src/Repositories/GamesRepository");
 const ParticipantRepository = require("./src/Repositories/ParticipantRepository");
+const SettingsRepository = require("./src/Repositories/SettingsRepository");
 const Game = require("./src/Game");
+const Settings = require("./src/Settings");
 const DbAdapter = require("./src/DbAdapter");
 
 const db = new sqlite3.Database('database.db3');
+const dbs = new sqlite3.Database('settings_database.db3');
 const dbAdapter = new DbAdapter(db);
+const dbsAdapter = new DbAdapter(dbs);
 const gamesRepository = new GamesRepository(dbAdapter);
 const participantsRepository = new ParticipantRepository(dbAdapter);
+const settingsRepository = new SettingsRepository(dbsAdapter);
 const game = new Game(dbAdapter, participantsRepository, gamesRepository);
+const settings = new Settings(dbsAdapter, settingsRepository);
 
-DiscordClient.on('ready', () => {
-  console.log(`готов вкалывать`)
+
+DiscordClient.on('ready', client => {
+  console.log(`готов вкалывать`);
+})
+
+Cron.schedule('0 * * *', () => { //АВТОПИДОР
+  settings.GetSubGuilds().then(array => {
+    console.log(`Список серверов с подпиской:`);
+    console.log(array);
+    array.forEach((item, i) => {
+      DiscordClient.channels.get(item.defch).send('Сообщение которое выводится конкретно для этого сервера');
+      console.log(`Запушено автосообщение на сервере \'` + item.id + `\', на канале \'` + item.defch + `\'.`);
+
+      game.CanStartGame(item.id).then(() => { //функция пидора (неожиданно да)
+        game.Run(item.id).then(async winMsg => {
+          await game.Tease(msg.channel).then();
+          DiscordClient.channels.get(item.defch).send(winMsg);
+        }, reject => {
+          DiscordClient.channels.get(item.defch).send(reject);
+        });
+      }, reject => {
+        DiscordClient.channels.get(item.defch).send("А пидор сегодня - " + reject);
+      });
+    });
+  });
+})
+
+
+DiscordClient.on('guildCreate', guild => {
+  let defaultChannel = "";
+  guild.channels.forEach((channel) => {
+    if(channel.type == "text" && defaultChannel == "") {
+      if(channel.permissionsFor(guild.me).has("SEND_MESSAGES")) {
+        defaultChannel = channel;
+      }
+    }
+  })
+  //defaultChannel will be the channel object that the bot first finds permissions for
+  defaultChannel.send('Приветственное сообщение я ещё не написал круто да!');
+
+  let guild_id = guild.id;
+  let def_ch = defaultChannel.id;
+  settingsRepository
+    .IsGuildExists(guild_id).then(isExists => {
+      if (isExists) {
+        console.log(`Сервер ` + guild_id + ` уже существует, настройки восстановлены.`);
+      } else {
+        settingsRepository.CreateNewSettings(guild_id, def_ch);
+        console.log(`Сервер ` + guild_id + ` успешно инициализирован.`);
+      }
+    });
 })
 
 DiscordClient.on('message', msg => {
