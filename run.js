@@ -31,12 +31,11 @@ DiscordClient.on('ready', client => {
   console.log(`готов вкалывать`);
 })
 
-Cron.schedule('0 * * *', () => { //АВТОПИДОР
+Cron.schedule('0 0 0 * * *', () => { //АВТОПИДОР
   settings.GetSubGuilds().then(array => {
     console.log(`Список серверов с подпиской:`);
     console.log(array);
     array.forEach((item, i) => {
-      DiscordClient.channels.get(item.defch).send('Сообщение которое выводится конкретно для этого сервера');
       console.log(`Запушено автосообщение на сервере \'` + item.id + `\', на канале \'` + item.defch + `\'.`);
 
       game.CanStartGame(item.id).then(() => { //функция пидора (неожиданно да)

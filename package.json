@@ -1,6 +1,6 @@
 {
   "name": "pidor-bot",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "A bot for gay-of-the-day game",
   "main": "run.js",
   "scripts": {
