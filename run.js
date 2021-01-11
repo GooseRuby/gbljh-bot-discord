@@ -6,6 +6,7 @@ let prefix = config.prefix;
 
 const DiscordJS = require("discord.js");
 const sqlite3 = require("sqlite3");
+const Cron = require('node-cron'); //штука для запуска в определённое время
 const DiscordClient = new DiscordJS.Client();
 const ChatFunctions = require("./src/ChatFunctions");
 const GamesRepository = require("./src/Repositories/GamesRepository");
@@ -19,8 +20,13 @@ const gamesRepository = new GamesRepository(dbAdapter);
 const participantsRepository = new ParticipantRepository(dbAdapter);
 const game = new Game(dbAdapter, participantsRepository, gamesRepository);
 
-DiscordClient.on('ready', () => {
-  console.log(`готов вкалывать`)
+Cron.schedule('* * * * *', () => {
+  DiscordClient.channels.get('793373852792258572').send('Сообщение которое выводится 1 раз в минуту')
+  console.log('running a task every minute');
+});
+
+DiscordClient.on('ready', client => {
+  console.log(`готов вкалывать`);
 })
 
 DiscordClient.on('message', msg => {
