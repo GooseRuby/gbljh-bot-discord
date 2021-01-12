@@ -40,7 +40,7 @@ Cron.schedule('0 0 0 * * *', () => { //АВТОПИДОР
 
       game.CanStartGame(item.id).then(() => { //функция пидора (неожиданно да)
         game.Run(item.id).then(async winMsg => {
-          await game.Tease(msg.channel).then();
+          await game.Tease(DiscordClient.channels.get(item.defch)).then();
           DiscordClient.channels.get(item.defch).send(winMsg);
         }, reject => {
           DiscordClient.channels.get(item.defch).send(reject);
