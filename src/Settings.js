@@ -42,7 +42,7 @@ class Settings {
         });
     }
 
-
+    
 /*
 
     async CanStartGame(guild_id) {

@@ -64,27 +64,36 @@ DiscordClient.on('guildCreate', guild => {
     .setFooter("Автор: Гусик#9344", myAvatarURL );
 
   let defaultChannel = "";
-  guild.channels.cache.forEach((channel) => {
-    if(channel.type == "text" && defaultChannel == "") {
-      if(channel.permissionsFor(guild.me).has("SEND_MESSAGES")) {
-        defaultChannel = channel;
-      }
-    }
-  })
-  //defaultChannel will be the channel object that the bot first finds permissions for
-  defaultChannel.send(helloEmbed);
+
 
   let guild_id = guild.id;
-  let def_ch = defaultChannel.id;
+
   settingsRepository
     .IsGuildExists(guild_id).then(isExists => {
       if (isExists) {
-        console.log(`Сервер ` + guild_id + ` уже существует, настройки восстановлены.`);
+        settingsRepository
+          .GetDefCh(guild.id)
+            .then(defch => {
+              console.log(`Сервер ` + guild_id + ` уже существует, настройки восстановлены. Дефолтный канал - ` + defch);
+              DiscordClient.channels.cache.get(defch).send(helloEmbed);
+            });
       } else {
+        guild.channels.cache.forEach((channel) => {
+          if(channel.type == "text" && defaultChannel == "") {
+            if(channel.permissionsFor(guild.me).has("SEND_MESSAGES")) {
+              defaultChannel = channel;
+            }
+          }
+        });
+
+        let def_ch = defaultChannel.id;
         settingsRepository.CreateNewSettings(guild_id, def_ch);
         console.log(`Сервер ` + guild_id + ` успешно инициализирован.`);
+
+        //defaultChannel will be the channel object that the bot first finds permissions for
+        defaultChannel.send(helloEmbed);
       }
-    });
+  });
 })
 
 DiscordClient.on('message', msg => {
