@@ -41,12 +41,12 @@ Cron.schedule('0 0 0 * * *', () => { //АВТОПИДОР
       game.CanStartGame(item.id).then(() => { //функция пидора (неожиданно да)
         game.Run(item.id).then(async winMsg => {
           await game.Tease(DiscordClient.channels.get(item.defch)).then();
-          DiscordClient.channels.get(item.defch).send(winMsg);
+          DiscordClient.channels.cache.get(item.defch).send(winMsg);
         }, reject => {
-          DiscordClient.channels.get(item.defch).send(reject);
+          DiscordClient.channels.cache.get(item.defch).send(reject);
         });
       }, reject => {
-        DiscordClient.channels.get(item.defch).send("А пидор сегодня - " + reject);
+        DiscordClient.channels.cache.get(item.defch).send("А пидор сегодня - " + reject);
       });
     });
   });
@@ -54,8 +54,17 @@ Cron.schedule('0 0 0 * * *', () => { //АВТОПИДОР
 
 
 DiscordClient.on('guildCreate', guild => {
+  let myAvatarURL = 'https://images-ext-1.discordapp.net/external/Y0x5z86Vwx6_m6cbFHGLvFlovc7R0TW1RaGYnmBeq_Y/https/cdn.discordapp.com/avatars/188189518921334784/90a4a79ac996384954c06b9d468fc999.webp';
+  const helloEmbed = new DiscordJS.MessageEmbed()
+    .setColor('#FF6699')
+    .setTitle('Привет!')
+    .setDescription(`Спасибо за спользование бота! Добавляйтесь в игру командой "!пидордня" и запускайте рулетку "!ктопидор"
+      Если вам нужна доп. помощь напишите "!п помощь"
+      Подписывайтесь на группу бота вк: https://vk.com/gayoftheday_dc`)
+    .setFooter("Автор: Гусик#9344", myAvatarURL );
+
   let defaultChannel = "";
-  guild.channels.forEach((channel) => {
+  guild.channels.cache.forEach((channel) => {
     if(channel.type == "text" && defaultChannel == "") {
       if(channel.permissionsFor(guild.me).has("SEND_MESSAGES")) {
         defaultChannel = channel;
@@ -63,7 +72,7 @@ DiscordClient.on('guildCreate', guild => {
     }
   })
   //defaultChannel will be the channel object that the bot first finds permissions for
-  defaultChannel.send('Приветственное сообщение я ещё не написал круто да!');
+  defaultChannel.send(helloEmbed);
 
   let guild_id = guild.id;
   let def_ch = defaultChannel.id;
@@ -169,6 +178,51 @@ DiscordClient.on('message', msg => {
     participantsRepository.RemoveParticipant(discordId, msg.guild.id);
     msg.channel.send("Пользователь <@" + discordId + "> удалён из игры.");
     return;
+  }
+
+  if (msg.content.match(/^!п команды/) || msg.content.match(/^!п помощь/)) {
+    let myAvatarURL = 'https://images-ext-1.discordapp.net/external/Y0x5z86Vwx6_m6cbFHGLvFlovc7R0TW1RaGYnmBeq_Y/https/cdn.discordapp.com/avatars/188189518921334784/90a4a79ac996384954c06b9d468fc999.webp';
+    const helpEmbed = new DiscordJS.MessageEmbed()
+      .setColor('#FF6699')
+	    .setTitle('Помощь')
+	    .setDescription(`Этот бот создан для игры "пидордня". Раз в день вы можете запустить рандомный выбор сегодняшнего "счастливчика".
+      Группа вк: https://vk.com/gayoftheday_dc
+
+      Список команд доступных для бота:`)
+	    .addFields(
+		      { name: '!пидордня', value: '- участвовать в игре' },
+          { name: '!ктопидор', value: '- запустить игру (или узнать кто уже был сегодня выбран)' },
+          { name: '!топ или !топпидоров', value: '- вывести топ 10 на этом сервере' },
+          { name: '!исключить', value: '- убрать себя из участников (очки обнуляются!)' },
+          { name: '!п команды', value: '- вывести это окно с помощью' },
+          { name: '!п подписка', value: '- узнать для чего нужна подписка' },
+          { name: '\u200B', value: 'Доступное только админам:' },
+          { name: '!добавить [тег]', value: '- добавить тегнутого в список участников' },
+          { name: '!исключить [тег]', value: '- убрать тегнутого из участников (очки обнуляются!)' },
+          { name: '!п канал [тег канала]', value: '- изменить канал в котором будет выводится авто-сообщения (только для подписчиков)' },
+          { name: '\u200B', value: '\u200B' },
+          { name: 'Дисклеймер:', value: 'Автор бота не преследует цели оскорбить кого-то или высмеять людей с нетрадиционной секусуальной ориентацией. Все выражения используются в ироническом контексте.' }
+	    )
+	    .setFooter("Автор: Гусик#9344", myAvatarURL );
+
+    msg.channel.send(helpEmbed);
+  }
+
+
+  if (msg.content.match(/^!п подписка/)) {
+    let myAvatarURL = 'https://images-ext-1.discordapp.net/external/Y0x5z86Vwx6_m6cbFHGLvFlovc7R0TW1RaGYnmBeq_Y/https/cdn.discordapp.com/avatars/188189518921334784/90a4a79ac996384954c06b9d468fc999.webp';
+    const subEmbed = new DiscordJS.MessageEmbed()
+      .setColor('#FF6699')
+	    .setTitle('Подписка')
+	    .setDescription(`Подписка стоит 50 р/месяц и даёт некоторые преимущества. Её можно отключить в любой момент. Купить её можно в группе вк: https://vk.com/gayoftheday_dc через сервис VK Donut. Если есть вопросы - пишите в группе или мне в лс в дискорде (мой тег внизу этого сообщения)
+
+      Преимущества подписки:`)
+	    .addFields(
+		      { name: 'Автопидор', value: 'Автоматически в 00:00 по МСК запускает !ктопидор . Теперь вам не придётся жалеть, если вы пропустили день и забыли прописать команду! Вы сможете выбрать на какой канал бот будет писать эти автосообщения' },
+	    )
+	    .setFooter("Автор: Гусик#9344", myAvatarURL );
+
+    msg.channel.send(subEmbed);
   }
 });
 
