@@ -53,6 +53,16 @@ class SettingsRepository {
         return result.default_channel;
       });
     }
+
+    SetDefCh(guild_id, newch_id) {
+      this.dbsAdapter.run(
+        "UPDATE setlist SET default_channel = ?2 WHERE discord_guild_id = ?1",
+        {
+            1: guild_id,
+            2: newch_id
+        }
+      );
+    }
 }
 
 module.exports = SettingsRepository;

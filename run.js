@@ -40,7 +40,7 @@ Cron.schedule('0 0 0 * * *', () => { //АВТОПИДОР
 
       game.CanStartGame(item.id).then(() => { //функция пидора (неожиданно да)
         game.Run(item.id).then(async winMsg => {
-          await game.Tease(DiscordClient.channels.get(item.defch)).then();
+          await game.Tease(DiscordClient.channels.cache.get(item.defch)).then();
           DiscordClient.channels.cache.get(item.defch).send(winMsg);
         }, reject => {
           DiscordClient.channels.cache.get(item.defch).send(reject);
@@ -216,6 +216,33 @@ DiscordClient.on('message', msg => {
 
     msg.channel.send(helpEmbed);
   }
+
+  if (msg.content.match(/^!п канал/)) {
+    let chunks = msg.content.slice(prefix.length).trim().split(/ +/g);
+    if(msg.member.hasPermission("ADMINISTRATOR")){
+      if(chunks[2] != undefined) {
+        let defch = chunks[2];
+        settingsRepository
+          .IsGuildExists(msg.guild.id).then(isExists => {
+            if (isExists) {
+              settingsRepository.SetDefCh(msg.guild.id, defch);
+              console.log(`На сервере ` + msg.guild.id + ` дефолтный канал изменён на - ` + defch);
+              msg.channel.send(`Авто-сообщения теперь будут выводиться на канале - ` + defch);
+            }
+          })
+        } else {
+          settingsRepository
+            .GetDefCh(msg.guild.id)
+              .then(defch => {
+                msg.channel.send(`Сейчас сообщения выводятся на канале - ` + defch + `
+Если хотите изменить канал, то напишите "!п канал [id канала]" (без квадратных скобок)`);
+              });
+        }
+      } else {
+        msg.channel.send("У вас нет прав");
+        return;
+      }
+    }
 
 
   if (msg.content.match(/^!п подписка/)) {
