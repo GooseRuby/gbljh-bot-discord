@@ -221,21 +221,21 @@ DiscordClient.on('message', msg => {
     let chunks = msg.content.slice(prefix.length).trim().split(/ +/g);
     if(msg.member.hasPermission("ADMINISTRATOR")){
       if(chunks[2] != undefined) {
-        let defch = chunks[2];
+        let defch = msg.mentions.channels.first().id;
         settingsRepository
           .IsGuildExists(msg.guild.id).then(isExists => {
             if (isExists) {
               settingsRepository.SetDefCh(msg.guild.id, defch);
               console.log(`На сервере ` + msg.guild.id + ` дефолтный канал изменён на - ` + defch);
-              msg.channel.send(`Авто-сообщения теперь будут выводиться на канале - ` + defch);
+              msg.channel.send(`Авто-сообщения теперь будут выводиться на канале - <#` + defch + `>`);
             }
           })
         } else {
           settingsRepository
             .GetDefCh(msg.guild.id)
               .then(defch => {
-                msg.channel.send(`Сейчас сообщения выводятся на канале - ` + defch + `
-Если хотите изменить канал, то напишите "!п канал [id канала]" (без квадратных скобок)`);
+                msg.channel.send(`Сейчас сообщения выводятся на канале - <#` + defch + `>
+Если хотите изменить канал, то напишите "!п канал [тег канала]" (без квадратных скобок)`);
               });
         }
       } else {
