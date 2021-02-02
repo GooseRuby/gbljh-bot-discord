@@ -29,6 +29,13 @@ const settings = new Settings(dbsAdapter, settingsRepository);
 
 DiscordClient.on('ready', client => {
   console.log(`готов вкалывать`);
+  DiscordClient.user.setPresence({
+        status: 'online',
+        activity: {
+            type: `WATCHING`,
+            name: `за ${DiscordClient.guilds.cache.size} серверами`,
+        },
+    });
 })
 
 Cron.schedule('0 0 0 * * *', () => { //АВТОПИДОР
